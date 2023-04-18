@@ -47,28 +47,28 @@ class Wioe5Error(Exception):
         self.message =  message
         super().__init__(self.message)
 
-def wioError(answer : str):
-    index = answer.find('ERROR')
+def wioError(answer : bytes):
+    index = answer.find(b'ERROR')
     if index == -1:
         return
 
-    code = answer[index+6:answer.find(')')]
+    code = answer[index+6:answer.find(b')')]
     match code:
-        case '-1':
+        case b'-1':
             raise Wioe5InvalidParameterError
-        case '-10':
+        case b'-10':
             raise Wioe5CommandUnkownError
-        case '-11':
+        case b'-11':
             raise Wioe5WrongFormatError
-        case '-12':
+        case b'-12':
             raise Wioe5CommandUnavailableError
-        case '-20':
+        case b'-20':
             raise Wioe5ExcessParametersError
-        case '-21':
+        case b'-21':
             raise Wioe5LenghtError
-        case '-22':
+        case b'-22':
             raise Wioe5TimeoutError
-        case '-23':
+        case b'-23':
             raise Wioe5InvalidCharError
-        case '-24':
+        case b'-24':
             raise Wioe5Error

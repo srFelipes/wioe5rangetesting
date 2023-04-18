@@ -4,6 +4,7 @@ based on the information at https://files.seeedstudio.com/products/317990687/res
 """
 import serial
 import serial.tools.list_ports
+from src.wio_errors import *
 baudrate = 9600
 timeout = 1
 
@@ -26,20 +27,17 @@ class Wioe5:
         if not serial_port:
             serial_port = serial.Serial('/dev/ttyUSB0', baudrate)
         self.connection = serial.Serial(port =serial_port.port,timeout=timeout)
-        answer = self.write('AT')
-        if not answer==b'+AT: OK\n':
-            print(answer)
-            raise ConnectionError("connected device has error or isnt wio e5")
-            
+        self.write('AT')
         self.mode = None
         self.error = None
     def write(self,command : str):
         """
-        Write method
+        Write method, it checks if there is an error in the answer before returning it
         """
         if not b'\n' == command[-1]:
             command += '\n'
         self.connection.write(command.encode('UTF-8'))
         self.connection.flush()
         answer = self.connection.readline()
+        wioError(answer)
         return answer

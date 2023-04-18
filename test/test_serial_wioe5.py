@@ -1,7 +1,7 @@
 import pytest
 import mock_serial
 from src.serial_wioe5 import Wioe5
-
+from src.wio_errors import *
 
 @pytest.fixture
 def serial_port()->mock_serial.MockSerial:
@@ -26,7 +26,7 @@ def test_at_not_ok(serial_port: mock_serial.MockSerial,wioe5):
     try:
         wio = Wioe5(serial_port=serial_port)
         assert False
-    except ConnectionError:
+    except Wioe5WrongFormatError:
         assert True
     assert serial_port.stubs['AT'].called
     
