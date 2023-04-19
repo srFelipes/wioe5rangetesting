@@ -53,16 +53,25 @@ class Wioe5:
         self.connection.write(command.encode('UTF-8'))
         self.connection.flush()
         answer = self.connection.readline()
+        newlinepos = answer.find(b'\n') 
+        if not newlinepos == -1:
+            if answer.find(b'\r') == -1:
+                answer = answer[:newlinepos]
+            else:
+                answer = answer[:newlinepos-1]
         try:
             wioError(answer)
         except Exception as e:
             logger.error('answer \"%s\" is an error',answer,exc_info=e)
             raise e
         logger.debug('answer was %s',answer)
-        return answer
+        return answer.decode()
     
     def get_mode(self):
         """
         Ask the mode to the radio
         """
-        query = 'AT+MODE'
+        query = 'AT+MODE\n'
+        answer = self.write(query)
+        self.mode = answer[7:]
+        return self.mode

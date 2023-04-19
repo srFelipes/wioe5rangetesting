@@ -26,7 +26,16 @@ def test_no_error():
                           (b'+AT: ERROR(-22)\r\n',errors.Wioe5TimeoutError),
                           (b'+AT: ERROR(-23)\r\n',errors.Wioe5InvalidCharError),
                           (b'+AT: ERROR(-24)\r\n',errors.Wioe5Error),
-                          (b'+AT: ERROR(-1)\r\n',errors.Wioe5InvalidParameterError)])
+                          (b'+AT: ERROR(-1)\r\n',errors.Wioe5InvalidParameterError),
+                          (b'+AT: ERROR(-10)',errors.Wioe5CommandUnkownError),
+                          (b'+AT: ERROR(-11)',errors.Wioe5WrongFormatError),
+                          (b'+AT: ERROR(-12)',errors.Wioe5CommandUnavailableError),
+                          (b'+AT: ERROR(-20)',errors.Wioe5ExcessParametersError),
+                          (b'+AT: ERROR(-21)',errors.Wioe5LenghtError),
+                          (b'+AT: ERROR(-22)',errors.Wioe5TimeoutError),
+                          (b'+AT: ERROR(-23)',errors.Wioe5InvalidCharError),
+                          (b'+AT: ERROR(-24)',errors.Wioe5Error),
+                          (b'+AT: ERROR(-1)',errors.Wioe5InvalidParameterError)])
 def test_errors(ans,exception):
     try:
         errors.wioError(ans)
