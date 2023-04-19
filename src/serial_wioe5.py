@@ -41,14 +41,16 @@ class Wioe5:
         
         self.write('AT')
         self.mode = None
+        self.state = None
         self.error = None
+        self.test_config_dict = {}
 
     def write(self,command : str):
         """
         Write method, it checks if there is an error in the answer before returning it
         """
         logger.debug('command %s',command)
-        if not b'\n' == command[-1]:
+        if not '\n' == command[-1]:
             command += '\n'
         self.connection.write(command.encode('UTF-8'))
         self.connection.flush()
@@ -75,3 +77,72 @@ class Wioe5:
         answer = self.write(query)
         self.mode = answer[7:]
         return self.mode
+    
+    def set_mode(self,new_mode : str):
+        """
+        set the mode of the radio
+        """
+        query = 'AT+MODE='+new_mode
+        answer = self.write(query)[7:]
+        if answer == new_mode:
+            self.mode = new_mode
+            return 1
+        else:
+            return 0
+    
+    def set_sleep(self):
+        """
+        put the radio to sleep, it will wake up after any command is given
+        """
+        query =  'AT+LOWPOWER'
+        answer =  self.write(query)
+        if answer[11:]=='SLEEP':
+            self.state='SLEEP'
+    
+    def wakeup(self):
+        """
+        wakes up the radio after sleeping
+        """
+        if not 'SLEEP' == self.state:
+            return 
+        query = 'AT'
+        answer = self.write(query)
+        if 'WAKEUP' == answer[11:]:
+            self.state='OK'
+    
+    def config_test(self,
+                    frequency = '915', 
+                    sf='SF12',
+                    bandwidth = '125',
+                    tx_preamble= '12',
+                    rx_preamble= '15',
+                    tx_power='14',
+                    crc='ON',
+                    iq='OFF',
+                    net='OFF'):
+        """
+        Checks if the radio is in test mode and then send the given configuration
+        """
+        if not self.mode == 'TEST':
+            self.set_mode('TEST')
+        query = 'AT+TEST=RFCFG,'+frequency+','+ \
+                sf+','+\
+                bandwidth+','+\
+                tx_preamble+','+\
+                rx_preamble+','+\
+                tx_power+','+\
+                crc+','+\
+                iq+','+\
+                net+'\n'
+        answer = self.write(query)
+        positions = [i for i, letter in enumerate(answer) if letter == ',']
+        self.test_config_dict={
+            'frequency' : answer[15:positions[0]],
+            'sf':answer[positions[0]+2:positions[1]],
+            'bandwidth' : answer[positions[1]+2:positions[2]],
+            'tx_preamble': answer[positions[2]+7:positions[3]],
+            'rx_preamble': answer[positions[3]+7:positions[4]],
+            'tx_power': answer[positions[4]+6:positions[5]],
+            'crc':answer[positions[5]+6:positions[6]],
+            'iq':answer[positions[6]+5:positions[7]],
+            'net':answer[positions[7]+6:]} 
