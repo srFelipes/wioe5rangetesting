@@ -44,6 +44,8 @@ class Wioe5:
         self.state = None
         self.error = None
         self.test_config_dict = {}
+        self.is_test_config = False
+        self.test_status = 'NO'
 
     def write(self,command : str):
         """
@@ -86,6 +88,8 @@ class Wioe5:
         answer = self.write(query)[7:]
         if answer == new_mode:
             self.mode = new_mode
+            if self.mode == 'TEST':
+                self.is_test_config=False
             return 1
         else:
             return 0
@@ -145,4 +149,15 @@ class Wioe5:
             'tx_power': answer[positions[4]+6:positions[5]],
             'crc':answer[positions[5]+6:positions[6]],
             'iq':answer[positions[6]+5:positions[7]],
-            'net':answer[positions[7]+6:]} 
+            'net':answer[positions[7]+6:]}
+        self.is_test_config=True
+    
+    def set_test_crx(self):
+        """
+        If the radio is in test mode and it has been configured,
+        sets it in continuous RX mode
+        """
+        if self.mode=='TEST' and self.is_test_config:
+            query = 'AT+TEST=RXLRPKT'
+            answer = self.write(query)
+            self.test_status = answer[7:]

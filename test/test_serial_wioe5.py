@@ -165,3 +165,18 @@ def test_config_test_mode_uses_parameters(serial_port,wioe5:Wioe5):
             'crc':'OFF',
             'iq':'ON',
             'net':'ON'} == wioe5.test_config_dict
+
+def test_set_crx(serial_port,wioe5:Wioe5):
+    serial_port.stub(name='set_mode',
+                     receive_bytes= b'AT+MODE=TEST\n',
+                     send_bytes=b'+MODE: TEST\n')
+    serial_port.stub(name='set_config',
+                     receive_bytes= b'AT+TEST=RFCFG,915,SF12,125,12,15,14,ON,OFF,OFF\n',
+                     send_bytes=b'+TEST: RFCFG F:915000000, SF12, BW125K, TXPR:12, RXPR:15, POW:14dBm, CRC:ON, IQ:OFF, NET:OFF\n')
+    serial_port.stub(name='crx',
+                     receive_bytes= b'AT+TEST=RXLRPKT\n',
+                     send_bytes=b'+TEST: RXLRPKT\n')
+    wioe5.config_test()
+    wioe5.set_test_crx()
+    assert serial_port.stubs['crx'].called
+    assert 'RXLRPKT'==wioe5.test_status
