@@ -181,3 +181,16 @@ def test_set_crx(serial_port,wioe5:Wioe5):
     assert serial_port.stubs['crx'].called
     assert 'RXLRPKT'==wioe5.test_status
 
+def test_send_a_packet_test(serial_port,wioe5:Wioe5):
+    serial_port.stub(name='set_mode',
+                     receive_bytes= b'AT+MODE=TEST\n',
+                     send_bytes=b'+MODE: TEST\n')
+    serial_port.stub(name='set_config',
+                     receive_bytes= b'AT+TEST=RFCFG,915,SF12,125,12,15,14,ON,OFF,OFF\n',
+                     send_bytes=b'+TEST: RFCFG F:915000000, SF12, BW125K, TXPR:12, RXPR:15, POW:14dBm, CRC:ON, IQ:OFF, NET:OFF\n')
+    serial_port.stub(name='send_a_packet',
+                     receive_bytes= b'AT+TEST=TXLRPKT, \"00 AA 11 BB 22 CC\"\n',
+                     send_bytes=b'+TEST: TXLRPKT \"00AA11BB22CC\"\n'+b'+TEST: TX DONE\n')
+    wioe5.config_test()
+    wioe5.send_packet_in_test([0x00,0xAA,0x11,0xBB,0x22,0xCC])
+    assert serial_port.stubs['send_a_packet'].called

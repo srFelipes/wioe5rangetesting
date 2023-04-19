@@ -162,7 +162,7 @@ class Wioe5:
             answer = self.write(query)
             self.test_status = answer[7:]
 
-    def wait_for_packet(self):
+    def wait_for_packet_in_test(self):
         """
         if the test_status is RXLRPKT then it blocks until a new message is received
         UNTESTED
@@ -172,3 +172,12 @@ class Wioe5:
                 rawpacket = self.connection.readline()
                 if rawpacket:
                     return rawpacket[rawpacket.find('\"')-1]
+    
+    def send_packet_in_test(self,packet):
+        """
+        makes sure the test mode is configured and sends a packet
+        """
+        if self.mode=='TEST' and self.is_test_config:
+            query = 'AT+TEST=TXLRPKT, \"00 AA 11 BB 22 CC\"\n'
+            answer = self.write(query)
+            
