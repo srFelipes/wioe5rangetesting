@@ -180,3 +180,4 @@ def test_set_crx(serial_port,wioe5:Wioe5):
     wioe5.set_test_crx()
     assert serial_port.stubs['crx'].called
     assert 'RXLRPKT'==wioe5.test_status
+

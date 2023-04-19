@@ -161,3 +161,14 @@ class Wioe5:
             query = 'AT+TEST=RXLRPKT'
             answer = self.write(query)
             self.test_status = answer[7:]
+
+    def wait_for_packet(self):
+        """
+        if the test_status is RXLRPKT then it blocks until a new message is received
+        UNTESTED
+        """
+        if self.test_status=='RXLRPKT':
+            while True:
+                rawpacket = self.connection.readline()
+                if rawpacket:
+                    return rawpacket[rawpacket.find('\"')-1]
