@@ -178,6 +178,18 @@ class Wioe5:
         makes sure the test mode is configured and sends a packet
         """
         if self.mode=='TEST' and self.is_test_config:
-            query = 'AT+TEST=TXLRPKT, \"00 AA 11 BB 22 CC\"\n'
+            packet_string = ' '.join(hex(a) for a in packet)
+            packet_string = packet_string.replace('0x','')
+            packet_string = '\"' + packet_string + '\"'
+            query = 'AT+TEST=TXLRPKT, '+packet_string
             answer = self.write(query)
-            
+            while True:
+                answer = self.connection.readline()
+                try:
+                    wioError(answer)
+                    if answer == b'+TEST: TX DONE\n':
+                        break
+                except Exception as e:
+                    logger.error('Answer has error',exc_info=e)
+                    raise e
+

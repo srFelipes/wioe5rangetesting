@@ -1,5 +1,6 @@
 import pytest
 import mock_serial
+import random
 from src.serial_wioe5 import Wioe5
 from src.wio_errors import *
 
@@ -181,7 +182,7 @@ def test_set_crx(serial_port,wioe5:Wioe5):
     assert serial_port.stubs['crx'].called
     assert 'RXLRPKT'==wioe5.test_status
 
-def test_send_a_packet_test(serial_port,wioe5:Wioe5):
+def test_send_a_packet_test(serial_port: mock_serial.MockSerial ,wioe5:Wioe5):
     serial_port.stub(name='set_mode',
                      receive_bytes= b'AT+MODE=TEST\n',
                      send_bytes=b'+MODE: TEST\n')
@@ -189,8 +190,42 @@ def test_send_a_packet_test(serial_port,wioe5:Wioe5):
                      receive_bytes= b'AT+TEST=RFCFG,915,SF12,125,12,15,14,ON,OFF,OFF\n',
                      send_bytes=b'+TEST: RFCFG F:915000000, SF12, BW125K, TXPR:12, RXPR:15, POW:14dBm, CRC:ON, IQ:OFF, NET:OFF\n')
     serial_port.stub(name='send_a_packet',
-                     receive_bytes= b'AT+TEST=TXLRPKT, \"00 AA 11 BB 22 CC\"\n',
+                     receive_bytes= b'AT+TEST=TXLRPKT, \"0 aa 11 bb 22 cc\"\n',
                      send_bytes=b'+TEST: TXLRPKT \"00AA11BB22CC\"\n'+b'+TEST: TX DONE\n')
     wioe5.config_test()
     wioe5.send_packet_in_test([0x00,0xAA,0x11,0xBB,0x22,0xCC])
     assert serial_port.stubs['send_a_packet'].called
+
+
+def test_send_a_packet_test_random_packet(serial_port,wioe5:Wioe5):
+    serial_port.stub(name='set_mode',
+                     receive_bytes= b'AT+MODE=TEST\n',
+                     send_bytes=b'+MODE: TEST\n')
+    serial_port.stub(name='set_config',
+                     receive_bytes= b'AT+TEST=RFCFG,915,SF12,125,12,15,14,ON,OFF,OFF\n',
+                     send_bytes=b'+TEST: RFCFG F:915000000, SF12, BW125K, TXPR:12, RXPR:15, POW:14dBm, CRC:ON, IQ:OFF, NET:OFF\n')
+    packet = [random.randint(0,255) for _ in range(10)]
+    packet_as_string = ' '.join(hex(b) for b in packet)
+    packet_as_string = '\"'+packet_as_string.replace('0x','')+'\"\n'
+    packet_as_string = packet_as_string.encode('UTF-8')
+    serial_port.stub(name='send_a_packet',
+                     receive_bytes= b'AT+TEST=TXLRPKT, '+packet_as_string,
+                     send_bytes=b'+TEST: TXLRPKT '+packet_as_string.replace(b' ',b'')+b'+TEST: TX DONE\n')
+    wioe5.config_test()
+    wioe5.send_packet_in_test(packet)
+    assert serial_port.stubs['send_a_packet'].called
+
+def test_send_a_packet_make_sure_tx_done(serial_port: mock_serial.MockSerial ,wioe5:Wioe5):
+    serial_port.stub(name='set_mode',
+                     receive_bytes= b'AT+MODE=TEST\n',
+                     send_bytes=b'+MODE: TEST\n')
+    serial_port.stub(name='set_config',
+                     receive_bytes= b'AT+TEST=RFCFG,915,SF12,125,12,15,14,ON,OFF,OFF\n',
+                     send_bytes=b'+TEST: RFCFG F:915000000, SF12, BW125K, TXPR:12, RXPR:15, POW:14dBm, CRC:ON, IQ:OFF, NET:OFF\n')
+    serial_port.stub(name='send_a_packet',
+                     receive_bytes= b'AT+TEST=TXLRPKT, \"0 aa 11 bb 22 cc\"\n',
+                     send_bytes=b'+TEST: TXLRPKT \"00AA11BB22CC\"\n'+b'+TEST: TX DONE\n')
+    wioe5.config_test()
+    wioe5.send_packet_in_test([0x00,0xAA,0x11,0xBB,0x22,0xCC])
+    assert serial_port.stubs['send_a_packet'].called
+    assert b'' == wioe5.connection.readline()
