@@ -27,6 +27,7 @@ class Wioe5:
         initialization method, a port can be given to it, otherwise it will try
         to open /dev/ttyUSB1
         """
+        logger.debug('Initializing a wio e5 object')
         if serial_port:
             if serial.Serial==type(serial_port):
                 self.connection = serial.Serial(port=serial_port.port,
@@ -38,7 +39,7 @@ class Wioe5:
             
         else:
             self.connection = serial.Serial('/dev/ttyUSB0', baudrate)
-        
+        logger.debug('Connection in %s',self.connection.port)
         self.write('AT')
         self.mode = None
         self.state = None
@@ -84,20 +85,24 @@ class Wioe5:
         """
         set the mode of the radio
         """
+        logger.debug('Set mode to %s',new_mode)
         query = 'AT+MODE='+new_mode
         answer = self.write(query)[7:]
         if answer == new_mode:
             self.mode = new_mode
             if self.mode == 'TEST':
                 self.is_test_config=False
+            logger.debug('success')
             return 1
         else:
+            logger.error('failed to change mode')
             return 0
     
     def set_sleep(self):
         """
         put the radio to sleep, it will wake up after any command is given
         """
+        logger.debug('sending the device to sleep')
         query =  'AT+LOWPOWER'
         answer =  self.write(query)
         if answer[11:]=='SLEEP':
@@ -107,6 +112,7 @@ class Wioe5:
         """
         wakes up the radio after sleeping
         """
+        logger.debug('waking up')
         if not 'SLEEP' == self.state:
             return 
         query = 'AT'
@@ -127,6 +133,17 @@ class Wioe5:
         """
         Checks if the radio is in test mode and then send the given configuration
         """
+        logger.info('configuring the radio with the following parameters \n'+\
+                     'frequency = %s\n'+\
+                     'sf = %s'+\
+                     'bandwidth = %s'+\
+                     'tx_preamble =  %s'+\
+                     'rx_preamble =  %s'+\
+                     'tx_power = %s'+\
+                     'crc = %s'+\
+                     'iq = %s'+\
+                     'net = %s',
+                     frequency,sf,bandwidth,tx_preamble,rx_preamble,tx_power,crc,iq,net)
         if not self.mode == 'TEST':
             self.set_mode('TEST')
         query = 'AT+TEST=RFCFG,'+frequency+','+ \
@@ -161,6 +178,7 @@ class Wioe5:
             query = 'AT+TEST=RXLRPKT'
             answer = self.write(query)
             self.test_status = answer[7:]
+            logging.info('entering continuous RX test mode')
 
     def wait_for_packet_in_test(self):
         """
@@ -171,16 +189,20 @@ class Wioe5:
             while True:
                 rawpacket = self.connection.readline()
                 if rawpacket:
-                    return rawpacket[rawpacket.find('\"')-1]
+                    packet = rawpacket[rawpacket.find('\"')-1]
+                    logging.info('received the following packet %s',packet)
+                    return packet
     
     def send_packet_in_test(self,packet):
         """
         makes sure the test mode is configured and sends a packet
         """
         if self.mode=='TEST' and self.is_test_config:
+            
             packet_string = ' '.join(hex(a) for a in packet)
             packet_string = packet_string.replace('0x','')
             packet_string = '\"' + packet_string + '\"'
+            logging.info('sending the following packet %s',packet_string)
             query = 'AT+TEST=TXLRPKT, '+packet_string
             answer = self.write(query)
             while True:
