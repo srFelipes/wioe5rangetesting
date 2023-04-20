@@ -209,7 +209,7 @@ class Wioe5:
                 answer = self.connection.readline()
                 try:
                     wioError(answer)
-                    if answer == b'+TEST: TX DONE\n':
+                    if answer == b'+TEST: TX DONE\n' or answer == b'+TEST: TX DONE\r\n':
                         break
                 except Exception as e:
                     logger.error('Answer has error',exc_info=e)
