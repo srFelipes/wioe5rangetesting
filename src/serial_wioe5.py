@@ -121,7 +121,7 @@ class Wioe5:
             self.state='OK'
     
     def config_test(self,
-                    frequency = '915', 
+                    frequency = '915',
                     sf='SF12',
                     bandwidth = '125',
                     tx_preamble= '12',
@@ -135,14 +135,14 @@ class Wioe5:
         """
         logger.info('configuring the radio with the following parameters \n'+\
                      'frequency = %s\n'+\
-                     'sf = %s'+\
-                     'bandwidth = %s'+\
-                     'tx_preamble =  %s'+\
-                     'rx_preamble =  %s'+\
-                     'tx_power = %s'+\
-                     'crc = %s'+\
-                     'iq = %s'+\
-                     'net = %s',
+                     'sf = %s\n'+\
+                     'bandwidth = %s\n'+\
+                     'tx_preamble =  %s\n'+\
+                     'rx_preamble =  %s\n'+\
+                     'tx_power = %s\n'+\
+                     'crc = %s\n'+\
+                     'iq = %s\n'+\
+                     'net = %s\n',
                      frequency,sf,bandwidth,tx_preamble,rx_preamble,tx_power,crc,iq,net)
         if not self.mode == 'TEST':
             self.set_mode('TEST')
