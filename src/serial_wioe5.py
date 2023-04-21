@@ -187,9 +187,22 @@ class Wioe5:
         """
         if self.test_status=='RXLRPKT':
             while True:
-                rawpacket = self.connection.readline()
-                if rawpacket:
-                    packet = rawpacket[rawpacket.find('\"')-1]
+                rawinfo = self.connection.readline()
+
+                if rawinfo:
+                    rawpacket = self.connection.readline()
+                    delimiters = [rawinfo.find(b'LEN:')+4,
+                                  rawinfo.find(b'RSSI:')+5,
+                                  rawinfo.find(b'SNR:')+4]
+                    rawpacket = rawpacket.replace(b'+TEST: RX \"',b'')
+                    rawpacket = rawpacket.replace(b'\"\r\n',b'')
+                    rawpacket = rawpacket.decode()
+
+                    rawinfo = rawinfo.decode()
+                    packet = {'LEN' : rawinfo[delimiters[0]:delimiters[1]-7],
+                              'RSSI' : rawinfo[delimiters[1]:delimiters[2]-6],
+                              'SNR' : rawinfo[delimiters[2]:-2],
+                              'MSG' : rawpacket}
                     logging.info('received the following packet %s',packet)
                     return packet
     
