@@ -53,22 +53,22 @@ def wioError(answer : bytes):
         return
 
     code = answer[index+6:answer.find(b')')]
-    match code:
-        case b'-1':
-            raise Wioe5InvalidParameterError
-        case b'-10':
-            raise Wioe5CommandUnkownError
-        case b'-11':
-            raise Wioe5WrongFormatError
-        case b'-12':
-            raise Wioe5CommandUnavailableError
-        case b'-20':
-            raise Wioe5ExcessParametersError
-        case b'-21':
-            raise Wioe5LenghtError
-        case b'-22':
-            raise Wioe5TimeoutError
-        case b'-23':
-            raise Wioe5InvalidCharError
-        case b'-24':
-            raise Wioe5Error
+
+    if code == b'-1':
+        raise Wioe5InvalidParameterError
+    elif code == b'-10':
+        raise Wioe5CommandUnkownError
+    elif code == b'-11':
+        raise Wioe5WrongFormatError
+    elif code == b'-12':
+        raise Wioe5CommandUnavailableError
+    elif code == b'-20':
+        raise Wioe5ExcessParametersError
+    elif code == b'-21':
+        raise Wioe5LenghtError
+    elif code == b'-22':
+        raise Wioe5TimeoutError
+    elif code == b'-23':
+        raise Wioe5InvalidCharError
+    elif code == b'-24':
+        raise Wioe5Error
