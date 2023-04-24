@@ -35,12 +35,12 @@
 	"loggers": {
 		"__main__": {
 			"handlers": ["info_file_handler", "console", "debug_handler"],
-			"levels": "DEBUG",
+			"level": "DEBUG",
 			"propagate": false
 		}
 	},
 	"root": {
-		"handlers": ["console", "debug_handler"],
+		"handlers": ["console", "info_file_handler","debug_handler"],
 		"level": "DEBUG"
 	}
 }
