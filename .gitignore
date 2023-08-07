@@ -49,3 +49,4 @@ l10n/
 /env
 /.vscode
 */logs
+*.pkl
