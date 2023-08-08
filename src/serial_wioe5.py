@@ -40,7 +40,9 @@ class Wioe5:
         else:
             self.connection = serial.Serial('/dev/ttyUSB0', baudrate)
         logger.debug('Connection in %s',self.connection.port)
-        self.write('AT')
+        answer = self.write('AT')
+        if answer == '':
+            raise TimeoutError('The devicce did not answer')
         self.mode = None
         self.state = None
         self.error = None

@@ -21,6 +21,17 @@ def test_at_called(serial_port):
     wioe = Wioe5(serial_port.port)
     assert serial_port.stubs['AT'].called
 
+def test_init_timeout(serial_port: mock_serial.MockSerial):
+    serial_port.stub(name = 'AT',
+                     receive_bytes = b'AT\n',
+                     send_bytes=b'')
+    try:
+        wio = Wioe5(serial_port=serial_port.port)
+        assert False
+        
+    except:
+        assert True
+
 def test_at_not_ok(serial_port: mock_serial.MockSerial,wioe5):
     serial_port.stub(name = 'AT',receive_bytes = b'AT\n',
                      send_bytes=b'+AT: ERROR(-11)\n')
