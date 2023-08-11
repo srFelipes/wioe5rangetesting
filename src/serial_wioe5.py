@@ -6,6 +6,7 @@ import logging
 import serial
 import serial.tools.list_ports
 from src.wio_errors import *
+import time
 baudrate = 9600
 timeout = 1
 
@@ -182,11 +183,12 @@ class Wioe5:
             self.test_status = answer[7:]
             logging.info('entering continuous RX test mode')
 
-    def wait_for_packet_in_test(self):
+    def wait_for_packet_in_test(self,timeout=None):
         """
         if the test_status is RXLRPKT then it blocks until a new message is received
         UNTESTED
         """
+        t_init= time.clock_gettime(0)
         if self.test_status=='RXLRPKT':
             while True:
                 rawinfo = self.connection.readline()
@@ -207,6 +209,9 @@ class Wioe5:
                               'MSG' : rawpacket}
                     logging.info('received the following packet %s',packet)
                     return packet
+                if timeout:
+                    if (time.clock_gettime(0)-t_init) <= timeout:
+                        return None
     
     def send_packet_in_test(self,packet):
         """
