@@ -42,7 +42,7 @@ class Wioe5:
             self.connection = serial.Serial('/dev/ttyUSB0', baudrate)
         logger.debug('Connection in %s',self.connection.port)
         answer = self.write('AT')
-        if answer == '':
+        if answer != '+AT: OK':
             raise TimeoutError('The devicce did not answer')
         self.mode = None
         self.state = None
@@ -183,7 +183,7 @@ class Wioe5:
             self.test_status = answer[7:]
             logging.info('entering continuous RX test mode')
 
-    def wait_for_packet_in_test(self,timeout=None):
+    def wait_for_packet_in_test(self,func_timeout=None):
         """
         if the test_status is RXLRPKT then it blocks until a new message is received
         UNTESTED
@@ -209,16 +209,18 @@ class Wioe5:
                               'MSG' : rawpacket}
                     logging.info('received the following packet %s',packet)
                     return packet
-                if timeout:
-                    if (time.clock_gettime(0)-t_init) <= timeout:
+                if func_timeout:
+                    if (time.clock_gettime(0)-t_init) >= func_timeout:
                         return None
+        else:
+            logging.error('Radio is not in rx mode')
     
     def send_packet_in_test(self,packet):
         """
         makes sure the test mode is configured and sends a packet
         """
         if self.mode=='TEST' and self.is_test_config:
-            
+            self.test_status = 'TXLRPKT'
             packet_string = ' '.join(hex(a) for a in packet)
             packet_string = packet_string.replace('0x','')
             packet_string = '\"' + packet_string + '\"'
@@ -234,4 +236,3 @@ class Wioe5:
                 except Exception as e:
                     logger.error('Answer has error',exc_info=e)
                     raise e
-
