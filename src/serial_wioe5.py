@@ -5,7 +5,7 @@ based on the information at https://files.seeedstudio.com/products/317990687/res
 import logging
 import serial
 import serial.tools.list_ports
-from src.wio_errors import *
+from .wio_errors import *
 import time
 baudrate = 9600
 timeout = 1
